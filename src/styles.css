@@ -1,0 +1,250 @@
+/* Styles communs aux trois formulaires. */
+
+:root {
+    --couleur-fond: #f7f6f2;
+    --couleur-fond-entete: #2b2540;
+    --couleur-texte: #1d1b24;
+    --couleur-discret: #5f5b6b;
+    --couleur-bordure: #cfcbd8;
+    --couleur-accent: #c3002f;
+    --couleur-accent-fonce: #9c0026;
+    --couleur-erreur: #b3261e;
+    --couleur-succes: #1e7a46;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--couleur-texte);
+    background: var(--couleur-fond);
+    line-height: 1.5;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+code {
+    font-family: Consolas, 'Cascadia Code', monospace;
+    background: #ece9f2;
+    padding: 0 0.25rem;
+    border-radius: 3px;
+    font-size: 0.92em;
+}
+
+.carte {
+    background: #fff;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.carte-entete h2 {
+    margin: 0.3rem 0 0.4rem;
+}
+
+.carte-entete p {
+    margin: 0 0 1rem;
+    color: var(--couleur-discret);
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: #f3dfe4;
+    color: var(--couleur-accent-fonce);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+fieldset {
+    border: 1px solid var(--couleur-bordure);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0 0 1rem;
+}
+
+legend {
+    font-weight: 600;
+    padding: 0 0.4rem;
+}
+
+.ligne {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0 1rem;
+}
+
+.champ {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.8rem;
+}
+
+.champ > label,
+.champ > .libelle {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.obligatoire::after {
+    content: ' *';
+    color: var(--couleur-accent);
+}
+
+input:not([type='checkbox'], [type='radio']),
+select,
+textarea {
+    font: inherit;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: 6px;
+    background: #fff;
+}
+
+textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--couleur-accent);
+    outline-offset: 1px;
+}
+
+input:disabled,
+select:disabled {
+    background: #efedf3;
+    color: var(--couleur-discret);
+}
+
+/* Classes posées par Angular (ng-*) : on ne colore qu'après passage dans le champ. */
+input.ng-invalid.ng-touched:not(form),
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+[aria-invalid='true'] {
+    border-color: var(--couleur-erreur);
+}
+
+.choix {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+}
+
+.choix label,
+.case {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: normal;
+}
+
+.aide {
+    color: var(--couleur-discret);
+    font-size: 0.85rem;
+    margin: 0.2rem 0 0;
+}
+
+.erreur {
+    color: var(--couleur-erreur);
+    font-size: 0.85rem;
+    margin: 0.2rem 0 0;
+}
+
+.attente {
+    color: var(--couleur-discret);
+    font-size: 0.85rem;
+    margin: 0.2rem 0 0;
+}
+
+.ok {
+    color: var(--couleur-succes);
+    font-size: 0.85rem;
+    margin: 0.2rem 0 0;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+button {
+    font: inherit;
+    padding: 0.5rem 1.1rem;
+    border-radius: 6px;
+    border: 1px solid var(--couleur-accent);
+    background: var(--couleur-accent);
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    background: var(--couleur-accent-fonce);
+}
+
+button.secondaire {
+    background: #fff;
+    color: var(--couleur-accent);
+}
+
+button.secondaire:hover:not(:disabled) {
+    background: #fbeef1;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.succes {
+    margin-top: 1.2rem;
+    padding: 1rem;
+    border-left: 4px solid var(--couleur-succes);
+    background: #eaf6ef;
+    border-radius: 6px;
+}
+
+.succes h3 {
+    margin: 0 0 0.5rem;
+}
+
+.etat {
+    margin-top: 1.5rem;
+    border-top: 1px dashed var(--couleur-bordure);
+    padding-top: 1rem;
+}
+
+.etat summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.etat dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.2rem 1rem;
+}
+
+.etat dt {
+    color: var(--couleur-discret);
+}
+
+.etat dd {
+    margin: 0;
+}
+
+pre {
+    background: #1e1e2a;
+    color: #e9e9f0;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+}

@@ -1,0 +1,12 @@
+.langage {
+    display: grid;
+    grid-template-columns: 1fr 12rem auto;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+@media (max-width: 640px) {
+    .langage {
+        grid-template-columns: 1fr;
+    }
+}

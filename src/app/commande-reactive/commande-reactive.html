@@ -1,0 +1,205 @@
+<section class="carte">
+    <header class="carte-entete">
+        <span class="badge">Reactive Forms</span>
+        <h2>Bon de commande</h2>
+        <p>
+            Toute la structure est déclarée dans la classe avec <code>FormBuilder</code> : groupes
+            imbriqués, liste dynamique (<code>FormArray</code>), validateur de groupe, validateur
+            asynchrone et règle conditionnelle. Le template se contente de s'y relier.
+        </p>
+    </header>
+
+    @let c = client.controls;
+    @let l = livraison.controls;
+
+    <form [formGroup]="commandeForm" (ngSubmit)="envoyer()">
+        <fieldset formGroupName="client">
+            <legend>Client</legend>
+
+            <div class="champ">
+                <label for="nom" class="obligatoire">Nom</label>
+                <input id="nom" type="text" formControlName="nom" autocomplete="name">
+                @if (c.nom.touched && c.nom.invalid) {
+                    <p class="erreur">
+                        {{ c.nom.hasError('required') ? 'Le nom est obligatoire.' : 'Au moins 2 caractères.' }}
+                    </p>
+                }
+            </div>
+
+            <div class="ligne">
+                <div class="champ">
+                    <label for="email" class="obligatoire">E-mail</label>
+                    <input id="email" type="email" formControlName="email" autocomplete="email">
+                    @if (c.email.touched && c.email.invalid) {
+                        <p class="erreur">
+                            {{ c.email.hasError('required') ? 'L\'e-mail est obligatoire.' : 'Adresse e-mail invalide.' }}
+                        </p>
+                    }
+                </div>
+
+                <div class="champ">
+                    <label for="confirmationEmail" class="obligatoire">Confirmation de l'e-mail</label>
+                    <input id="confirmationEmail" type="email" formControlName="confirmationEmail"
+                           [attr.aria-invalid]="client.hasError('emailsDifferents') && c.confirmationEmail.touched">
+                    @if (c.confirmationEmail.touched && c.confirmationEmail.hasError('required')) {
+                        <p class="erreur">Confirmez l'e-mail.</p>
+                    }
+                    <!-- L'erreur est portée par le GROUPE client, pas par le champ. -->
+                    @if (c.confirmationEmail.touched && client.hasError('emailsDifferents')) {
+                        <p class="erreur">Les deux adresses ne correspondent pas.</p>
+                    }
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset formGroupName="livraison">
+            <legend>Livraison</legend>
+
+            <div class="champ">
+                <label for="adresse" class="obligatoire">Adresse</label>
+                <input id="adresse" type="text" formControlName="adresse" autocomplete="street-address">
+                @if (l.adresse.touched && l.adresse.invalid) {
+                    <p class="erreur">L'adresse est obligatoire.</p>
+                }
+            </div>
+
+            <div class="ligne">
+                <div class="champ">
+                    <label for="codePostal" class="obligatoire">Code postal</label>
+                    <input id="codePostal" type="text" inputmode="numeric" formControlName="codePostal"
+                           autocomplete="postal-code">
+                    @if (l.codePostal.touched && l.codePostal.invalid) {
+                        <p class="erreur">
+                            {{ l.codePostal.hasError('required') ? 'Le code postal est obligatoire.' : '5 chiffres attendus.' }}
+                        </p>
+                    }
+                </div>
+
+                <div class="champ">
+                    <label for="ville" class="obligatoire">Ville</label>
+                    <input id="ville" type="text" formControlName="ville" autocomplete="address-level2">
+                    @if (l.ville.touched && l.ville.invalid) {
+                        <p class="erreur">La ville est obligatoire.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="ligne">
+                <div class="champ">
+                    <span class="libelle" id="libelle-mode">Mode de livraison</span>
+                    <div class="choix" role="radiogroup" aria-labelledby="libelle-mode">
+                        <label><input type="radio" formControlName="mode" value="standard"> Standard (offerte dès 50 €)</label>
+                        <label><input type="radio" formControlName="mode" value="express"> Express (9,90 €)</label>
+                    </div>
+                </div>
+
+                <div class="champ">
+                    <label for="date" [class.obligatoire]="l.mode.value === 'express'">Date de livraison</label>
+                    <input id="date" type="date" formControlName="date" [min]="aujourdhui">
+                    <p class="aide">Obligatoire en express.</p>
+                    @if (l.date.touched && l.date.invalid) {
+                        <p class="erreur">Choisissez une date pour la livraison express.</p>
+                    }
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset formArrayName="articles">
+            <legend>Articles</legend>
+
+            <!-- Chaque élément du FormArray est un FormGroup repéré par son index. -->
+            @for (article of articles.controls; track article; let i = $index) {
+                <div class="ligne article" [formGroupName]="i">
+                    <div class="champ">
+                        <label [for]="'produit-' + i" class="obligatoire">Produit {{ i + 1 }}</label>
+                        <select [id]="'produit-' + i" formControlName="produit">
+                            <option value="" disabled>-- Choisir --</option>
+                            @for (p of produits; track p.id) {
+                                <option [value]="p.id">{{ p.nom }} – {{ p.prix | currency: 'EUR' }}</option>
+                            }
+                        </select>
+                        @if (article.controls.produit.touched && article.controls.produit.invalid) {
+                            <p class="erreur">Choisissez un produit.</p>
+                        }
+                    </div>
+
+                    <div class="champ">
+                        <label [for]="'quantite-' + i" class="obligatoire">Quantité</label>
+                        <input [id]="'quantite-' + i" type="number" min="1" max="10" formControlName="quantite">
+                        @if (article.controls.quantite.touched && article.controls.quantite.invalid) {
+                            <p class="erreur">Entre 1 et 10.</p>
+                        }
+                    </div>
+
+                    <div class="champ">
+                        <span class="libelle">Montant</span>
+                        <span>{{ prixUnitaire(article.controls.produit.value) * article.controls.quantite.value | currency: 'EUR' }}</span>
+                        <button type="button" class="secondaire" (click)="retirerArticle(i)"
+                                [disabled]="articles.length === 1">
+                            Retirer
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <button type="button" class="secondaire" (click)="ajouterArticle()">+ Ajouter un article</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Paiement</legend>
+
+            <div class="champ">
+                <label for="codePromo">Code promo</label>
+                <input id="codePromo" type="text" formControlName="codePromo">
+                <p class="aide">Essayez ANGULAR22 ou ORSYS10. Vérifié en quittant le champ.</p>
+                @if (statutCode() === 'PENDING') {
+                    <p class="attente">Vérification du code…</p>
+                } @else if (codePromo.hasError('codeInconnu')) {
+                    <p class="erreur">Ce code n'existe pas.</p>
+                } @else if (remise() > 0) {
+                    <p class="ok">Code appliqué.</p>
+                }
+            </div>
+
+            <dl class="recap">
+                <dt>Sous-total</dt><dd>{{ sousTotal() | currency: 'EUR' }}</dd>
+                <dt>Remise</dt><dd>– {{ remise() | currency: 'EUR' }}</dd>
+                <dt>Frais de port</dt><dd>{{ fraisDePort() | currency: 'EUR' }}</dd>
+                <dt>Total</dt><dd><strong>{{ total() | currency: 'EUR' }}</strong></dd>
+            </dl>
+
+            <div class="champ">
+                <label class="case">
+                    <input type="checkbox" formControlName="cgv">
+                    J'accepte les conditions générales de vente.
+                </label>
+                @if (commandeForm.controls.cgv.touched && commandeForm.controls.cgv.invalid) {
+                    <p class="erreur">Vous devez accepter les CGV.</p>
+                }
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit">Commander</button>
+            <button type="button" class="secondaire" (click)="vider()">Vider le formulaire</button>
+        </div>
+    </form>
+
+    @if (envoye(); as commande) {
+        <div class="succes" role="status">
+            <h3>Commande enregistrée</h3>
+            <p>Merci {{ commande.client.nom }}, confirmation envoyée à {{ commande.client.email }}.</p>
+            <pre>{{ commande | json }}</pre>
+        </div>
+    }
+
+    <details class="etat">
+        <summary>État du formulaire en direct</summary>
+        <dl>
+            <dt>status</dt><dd>{{ commandeForm.status }}</dd>
+            <dt>dirty</dt><dd>{{ commandeForm.dirty }}</dd>
+            <dt>articles</dt><dd>{{ articles.length }}</dd>
+        </dl>
+        <pre>{{ commandeForm.getRawValue() | json }}</pre>
+    </details>
+</section>

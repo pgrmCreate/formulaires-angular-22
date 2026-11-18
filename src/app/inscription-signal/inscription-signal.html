@@ -1,0 +1,191 @@
+<section class="carte">
+    <header class="carte-entete">
+        <span class="badge">Signal Forms</span>
+        <h2>Création de compte</h2>
+        <p>
+            Le modèle est un <code>signal</code>. La fonction <code>form()</code> en tire un arbre de
+            champs typé et regroupe toutes les règles dans un schéma, avec leurs messages. Le
+            template relie chaque élément avec <code>[formField]</code> et lit l'état sous forme de
+            signaux.
+        </p>
+    </header>
+
+    @let f = inscriptionForm;
+
+    <!-- [formRoot] : empêche le rechargement, marque tout en touched et lance submission.action -->
+    <form [formRoot]="f">
+        <fieldset>
+            <legend>Compte</legend>
+
+            <div class="ligne">
+                <div class="champ">
+                    <label for="pseudo" class="obligatoire">Pseudo</label>
+                    <input id="pseudo" type="text" autocomplete="username" [formField]="f.pseudo"
+                           [attr.aria-invalid]="f.pseudo().touched() && f.pseudo().invalid()">
+                    <p class="aide">« admin » et « angular » sont déjà pris (erreur renvoyée par le serveur).</p>
+                    <!-- f.pseudo = le champ ; f.pseudo() = son état (value, valid, touched, errors...) -->
+                    @if (f.pseudo().touched()) {
+                        @for (erreur of f.pseudo().errors(); track erreur.kind) {
+                            <p class="erreur">{{ erreur.message }}</p>
+                        }
+                    }
+                </div>
+
+                <div class="champ">
+                    <label for="email" class="obligatoire">E-mail</label>
+                    <input id="email" type="email" autocomplete="email" [formField]="f.email"
+                           [attr.aria-invalid]="f.email().touched() && f.email().invalid()">
+                    @if (f.email().touched() && f.email().invalid()) {
+                        <!-- Seulement la première erreur. -->
+                        <p class="erreur">{{ f.email().errors()[0].message }}</p>
+                    }
+                </div>
+            </div>
+
+            <div class="ligne">
+                <div class="champ">
+                    <label for="motDePasse" class="obligatoire">Mot de passe</label>
+                    <input id="motDePasse" type="password" autocomplete="new-password"
+                           [formField]="f.motDePasse"
+                           [attr.aria-invalid]="f.motDePasse().touched() && f.motDePasse().invalid()">
+                    @if (forceMotDePasse()) {
+                        <p class="aide">Force : <strong>{{ forceMotDePasse() }}</strong></p>
+                    }
+                    @if (f.motDePasse().touched()) {
+                        @for (erreur of f.motDePasse().errors(); track erreur.message) {
+                            <p class="erreur">{{ erreur.message }}</p>
+                        }
+                    }
+                </div>
+
+                <div class="champ">
+                    <label for="confirmation" class="obligatoire">Confirmation</label>
+                    <input id="confirmation" type="password" autocomplete="new-password"
+                           [formField]="f.confirmation"
+                           [attr.aria-invalid]="f.confirmation().touched() && f.confirmation().invalid()">
+                    @if (f.confirmation().touched() && f.confirmation().invalid()) {
+                        <p class="erreur">{{ f.confirmation().errors()[0].message }}</p>
+                    }
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Profil</legend>
+
+            <div class="ligne">
+                <div class="champ">
+                    <label for="age" class="obligatoire">Âge</label>
+                    <!-- type="number" : [formField] convertit la saisie en nombre. -->
+                    <input id="age" type="number" [formField]="f.age"
+                           [attr.aria-invalid]="f.age().touched() && f.age().invalid()">
+                    @if (f.age().touched() && f.age().invalid()) {
+                        <p class="erreur">{{ f.age().errors()[0].message }}</p>
+                    }
+                </div>
+
+                <div class="champ">
+                    <label for="pays" class="obligatoire">Pays</label>
+                    <select id="pays" [formField]="f.pays"
+                            [attr.aria-invalid]="f.pays().touched() && f.pays().invalid()">
+                        <option value="" disabled>-- Choisir --</option>
+                        @for (p of pays; track p) {
+                            <option [value]="p">{{ p }}</option>
+                        }
+                    </select>
+                    @if (f.pays().touched() && f.pays().invalid()) {
+                        <p class="erreur">{{ f.pays().errors()[0].message }}</p>
+                    }
+                </div>
+            </div>
+
+            <div class="champ">
+                <span class="libelle obligatoire">Langages pratiqués</span>
+                <!-- Un champ tableau se parcourt comme un tableau : chaque élément est un sous-arbre. -->
+                @for (langage of f.langages; track langage; let i = $index) {
+                    <div class="langage">
+                        <input type="text" [attr.aria-label]="'Langage ' + (i + 1)"
+                               placeholder="TypeScript, Java, Python…" [formField]="langage.nom"
+                               [attr.aria-invalid]="langage.nom().touched() && langage.nom().invalid()">
+                        <select [attr.aria-label]="'Niveau du langage ' + (i + 1)" [formField]="langage.niveau">
+                            @for (n of niveaux; track n.valeur) {
+                                <option [value]="n.valeur">{{ n.libelle }}</option>
+                            }
+                        </select>
+                        <button type="button" class="secondaire" (click)="retirerLangage(i)">Retirer</button>
+                    </div>
+                    @if (langage.nom().touched() && langage.nom().invalid()) {
+                        <p class="erreur">{{ langage.nom().errors()[0].message }}</p>
+                    }
+                }
+                @if (f.langages().touched() && f.langages().invalid()) {
+                    @for (erreur of f.langages().errors(); track erreur.kind) {
+                        <p class="erreur">{{ erreur.message }}</p>
+                    }
+                }
+                <div>
+                    <button type="button" class="secondaire" (click)="ajouterLangage()">+ Ajouter un langage</button>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Préférences</legend>
+
+            <div class="champ">
+                <label class="case">
+                    <input type="checkbox" [formField]="f.newsletter">
+                    Recevoir la newsletter
+                </label>
+            </div>
+
+            <div class="champ">
+                <span class="libelle" id="libelle-frequence">Fréquence</span>
+                <!-- disabled() dans le schéma : [formField] pose l'attribut disabled tout seul. -->
+                <div class="choix" role="radiogroup" aria-labelledby="libelle-frequence">
+                    <label><input type="radio" value="hebdomadaire" [formField]="f.frequence"> Hebdomadaire</label>
+                    <label><input type="radio" value="mensuelle" [formField]="f.frequence"> Mensuelle</label>
+                </div>
+                @if (f.frequence().disabled()) {
+                    <p class="aide">Cochez la newsletter pour choisir une fréquence.</p>
+                }
+            </div>
+
+            <div class="champ">
+                <label class="case">
+                    <input type="checkbox" [formField]="f.cgu">
+                    J'accepte les conditions d'utilisation.
+                </label>
+                @if (f.cgu().touched() && f.cgu().invalid()) {
+                    <p class="erreur">{{ f.cgu().errors()[0].message }}</p>
+                }
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit" [disabled]="f().submitting()">
+                {{ f().submitting() ? 'Envoi en cours…' : 'Créer mon compte' }}
+            </button>
+            <button type="button" class="secondaire" (click)="vider()">Vider le formulaire</button>
+        </div>
+    </form>
+
+    @if (envoye(); as compte) {
+        <div class="succes" role="status">
+            <h3>Compte créé</h3>
+            <p>Bienvenue {{ compte.pseudo }} !</p>
+            <pre>{{ compte | json }}</pre>
+        </div>
+    }
+
+    <details class="etat">
+        <summary>État du formulaire en direct</summary>
+        <dl>
+            <dt>f().valid()</dt><dd>{{ f().valid() }}</dd>
+            <dt>f().dirty()</dt><dd>{{ f().dirty() }}</dd>
+            <dt>f().submitting()</dt><dd>{{ f().submitting() }}</dd>
+        </dl>
+        <!-- Le modèle EST la valeur du formulaire : pas de copie. -->
+        <pre>{{ inscription() | json }}</pre>
+    </details>
+</section>

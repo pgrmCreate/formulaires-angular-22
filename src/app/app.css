@@ -1,0 +1,72 @@
+.entete {
+    background: var(--couleur-fond-entete);
+    color: #fff;
+    padding: 1.5rem 1.5rem 0;
+}
+
+.entete-texte {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.entete h1 {
+    margin: 0;
+    font-size: 1.7rem;
+}
+
+.entete p {
+    margin: 0.3rem 0 1.2rem;
+    color: #d8d4e6;
+}
+
+nav {
+    max-width: 960px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+nav a {
+    display: flex;
+    flex-direction: column;
+    padding: 0.7rem 1rem;
+    border-radius: 8px 8px 0 0;
+    color: #fff;
+    text-decoration: none;
+    background: rgb(255 255 255 / 0.08);
+}
+
+nav a small {
+    color: #c9c3dc;
+    font-size: 0.8rem;
+}
+
+nav a:hover {
+    background: rgb(255 255 255 / 0.16);
+}
+
+nav a.actif {
+    background: var(--couleur-fond);
+    color: var(--couleur-texte);
+}
+
+nav a.actif small {
+    color: var(--couleur-discret);
+}
+
+main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    nav {
+        grid-template-columns: 1fr;
+    }
+
+    nav a {
+        border-radius: 8px;
+    }
+}

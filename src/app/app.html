@@ -1,0 +1,24 @@
+<header class="entete">
+    <div class="entete-texte">
+        <h1>Les formulaires en Angular 22</h1>
+        <p>Trois façons de construire un formulaire, trois composants complets.</p>
+    </div>
+    <nav aria-label="Types de formulaires">
+        <a routerLink="/template" routerLinkActive="actif">
+            <strong>1. Template-driven</strong>
+            <small>FormsModule · ngModel</small>
+        </a>
+        <a routerLink="/reactif" routerLinkActive="actif">
+            <strong>2. Reactive Forms</strong>
+            <small>ReactiveFormsModule · FormBuilder</small>
+        </a>
+        <a routerLink="/signal" routerLinkActive="actif">
+            <strong>3. Signal Forms</strong>
+            <small>&#64;angular/forms/signals · form()</small>
+        </a>
+    </nav>
+</header>
+
+<main>
+    <router-outlet />
+</main>

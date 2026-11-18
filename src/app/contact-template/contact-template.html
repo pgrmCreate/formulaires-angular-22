@@ -1,0 +1,185 @@
+<section class="carte">
+    <header class="carte-entete">
+        <span class="badge">Template-driven</span>
+        <h2>Demande de contact</h2>
+        <p>
+            Le modèle est un simple objet de la classe. Le template relie chaque champ avec
+            <code>[(ngModel)]</code> et pose les règles en attributs HTML (<code>required</code>,
+            <code>minlength</code>, <code>email</code>, <code>pattern</code>…). Angular construit
+            le <code>FormGroup</code> tout seul.
+        </p>
+    </header>
+
+    <!-- #f="ngForm" donne accès au formulaire (valid, submitted, value...) -->
+    <form #f="ngForm" (ngSubmit)="envoyer(f)">
+        <!-- ngModelGroup crée un sous-groupe : f.value.identite -->
+        <fieldset ngModelGroup="identite">
+            <legend>Identité</legend>
+
+            <div class="champ">
+                <span class="libelle obligatoire" id="libelle-civilite">Civilité</span>
+                <div class="choix" role="radiogroup" aria-labelledby="libelle-civilite">
+                    <!-- Boutons radio : même name, une valeur chacun. -->
+                    <label>
+                        <input type="radio" name="civilite" value="mme" required
+                               [(ngModel)]="contact.identite.civilite" #civilite="ngModel">
+                        Madame
+                    </label>
+                    <label>
+                        <input type="radio" name="civilite" value="m" required
+                               [(ngModel)]="contact.identite.civilite">
+                        Monsieur
+                    </label>
+                    <label>
+                        <input type="radio" name="civilite" value="autre" required
+                               [(ngModel)]="contact.identite.civilite">
+                        Ne se prononce pas
+                    </label>
+                </div>
+                @if (civilite.invalid && (civilite.touched || f.submitted)) {
+                    <p class="erreur">Choisissez une civilité.</p>
+                }
+            </div>
+
+            <div class="champ">
+                <label for="nom" class="obligatoire">Nom</label>
+                <!-- #nom="ngModel" donne accès à l'état du champ : valid, touched, errors... -->
+                <input id="nom" name="nom" type="text" autocomplete="name"
+                       required minlength="2" maxlength="50" appSansChiffre
+                       [(ngModel)]="contact.identite.nom" #nom="ngModel">
+                @if (nom.invalid && (nom.touched || f.submitted)) {
+                    @if (nom.hasError('required')) {
+                        <p class="erreur">Le nom est obligatoire.</p>
+                    }
+                    @if (nom.hasError('minlength')) {
+                        <p class="erreur">
+                            Au moins {{ nom.getError('minlength').requiredLength }} caractères
+                            ({{ nom.getError('minlength').actualLength }} saisis).
+                        </p>
+                    }
+                    @if (nom.hasError('sansChiffre')) {
+                        <p class="erreur">Le nom ne doit pas contenir de chiffre.</p>
+                    }
+                }
+            </div>
+        </fieldset>
+
+        <fieldset ngModelGroup="joindre">
+            <legend>Comment vous joindre</legend>
+
+            <div class="champ">
+                <label for="email" class="obligatoire">E-mail</label>
+                <input id="email" name="email" type="email" autocomplete="email" required email
+                       [(ngModel)]="contact.joindre.email" #email="ngModel">
+                @if (email.invalid && (email.touched || f.submitted)) {
+                    <p class="erreur">
+                        {{ email.hasError('required') ? 'L\'e-mail est obligatoire.' : 'Adresse e-mail invalide.' }}
+                    </p>
+                }
+            </div>
+
+            <div class="champ">
+                <span class="libelle" id="libelle-moyen">Moyen de contact préféré</span>
+                <div class="choix" role="radiogroup" aria-labelledby="libelle-moyen">
+                    <label>
+                        <input type="radio" name="moyen" value="email" [(ngModel)]="contact.joindre.moyen">
+                        E-mail
+                    </label>
+                    <label>
+                        <input type="radio" name="moyen" value="telephone" [(ngModel)]="contact.joindre.moyen">
+                        Téléphone
+                    </label>
+                </div>
+            </div>
+
+            <div class="champ">
+                <!-- Règle conditionnelle : [required] lié à une expression. -->
+                <label for="telephone" [class.obligatoire]="contact.joindre.moyen === 'telephone'">
+                    Téléphone
+                </label>
+                <input id="telephone" name="telephone" type="tel" autocomplete="tel"
+                       pattern="0[1-9]( ?[0-9]{2}){4}"
+                       [required]="contact.joindre.moyen === 'telephone'"
+                       [(ngModel)]="contact.joindre.telephone" #telephone="ngModel">
+                <p class="aide">Format : 06 12 34 56 78. Obligatoire si vous choisissez le téléphone.</p>
+                @if (telephone.invalid && (telephone.touched || f.submitted)) {
+                    <p class="erreur">
+                        {{ telephone.hasError('required') ? 'Le téléphone est obligatoire pour être rappelé.' : 'Numéro invalide.' }}
+                    </p>
+                }
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Votre demande</legend>
+
+            <div class="ligne">
+                <div class="champ">
+                    <label for="sujet" class="obligatoire">Sujet</label>
+                    <select id="sujet" name="sujet" required [(ngModel)]="contact.sujet" #sujet="ngModel">
+                        <option value="" disabled>-- Choisir --</option>
+                        @for (s of sujets; track s.valeur) {
+                            <option [value]="s.valeur">{{ s.libelle }}</option>
+                        }
+                    </select>
+                    @if (sujet.invalid && (sujet.touched || f.submitted)) {
+                        <p class="erreur">Choisissez un sujet.</p>
+                    }
+                </div>
+
+                <div class="champ">
+                    <label for="dateRappel">Date de rappel souhaitée</label>
+                    <input id="dateRappel" name="dateRappel" type="date" [min]="aujourdhui"
+                           [(ngModel)]="contact.dateRappel">
+                </div>
+            </div>
+
+            <div class="champ">
+                <label for="message" class="obligatoire">Message</label>
+                <textarea id="message" name="message" required minlength="20" [maxlength]="messageMax"
+                          [(ngModel)]="contact.message" #message="ngModel"></textarea>
+                <p class="aide">{{ contact.message.length }} / {{ messageMax }} caractères (20 minimum)</p>
+                @if (message.invalid && (message.touched || f.submitted)) {
+                    <p class="erreur">
+                        {{ message.hasError('required') ? 'Le message est obligatoire.' : 'Le message doit faire au moins 20 caractères.' }}
+                    </p>
+                }
+            </div>
+
+            <div class="champ">
+                <!-- Case à cocher + required : elle doit être cochée. -->
+                <label class="case">
+                    <input type="checkbox" name="consentement" required
+                           [(ngModel)]="contact.consentement" #consentement="ngModel">
+                    J'accepte que mes données servent à traiter ma demande.
+                </label>
+                @if (consentement.invalid && (consentement.touched || f.submitted)) {
+                    <p class="erreur">Votre accord est nécessaire pour envoyer la demande.</p>
+                }
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit">Envoyer la demande</button>
+            <button type="button" class="secondaire" (click)="vider(f)">Vider le formulaire</button>
+        </div>
+    </form>
+
+    @if (envoye(); as demande) {
+        <div class="succes" role="status">
+            <h3>Demande envoyée</h3>
+            <p>Merci {{ demande.identite.nom }}, nous vous répondrons par {{ demande.joindre.moyen === 'email' ? 'e-mail' : 'téléphone' }}.</p>
+            <pre>{{ demande | json }}</pre>
+        </div>
+    }
+
+    <details class="etat">
+        <summary>État du formulaire en direct</summary>
+        <dl>
+            <dt>f.valid</dt><dd>{{ f.valid }}</dd>
+            <dt>f.dirty</dt><dd>{{ f.dirty }}</dd>
+            <dt>f.submitted</dt><dd>{{ f.submitted }}</dd>
+        </dl>
+        <pre>{{ f.value | json }}</pre>
+    </details>
+</section>
